@@ -70,7 +70,7 @@ def run_python(code: str) -> str:
     return str(eval(code))     # caught — tool args are model-chosen
 ```
 
-## The two lessons the rules taught me
+## Three lessons the rules taught me
 
 **Precision claims die on contact with real code.** The first field test
 scanned a real non-LLM TypeScript codebase. One finding: a "Gemini API key"
@@ -86,6 +86,17 @@ means GitHub's push protection blocks the repo's own first push. The fix
 (`.github/secret_scanning.yml` naming exactly that file) has to exist
 *before* the first push, because afterward the blobs are already in the
 remote's history. File that one under "problems you only meet once."
+
+**The repo's first vulnerability report was against itself.** While
+writing this repo's SECURITY.md, we found a script-injection hole in our
+own GitHub Action: `${{ inputs.paths }}` interpolated straight into a
+`run:` block. GitHub expands `${{ }}` textually before bash ever sees the
+script, so a consumer who wires `paths` to a PR title in a
+`pull_request_target` workflow is handing command execution to whoever
+opens a PR. The fix is the boring, correct one — route inputs through
+`env:` so they arrive as data. The rules scan your code, but the
+packaging is code too, and the threat model doesn't care which directory
+it lives in.
 
 ## What's next
 
