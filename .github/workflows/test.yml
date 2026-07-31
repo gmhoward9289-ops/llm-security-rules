@@ -5,12 +5,20 @@ on:
     branches: [main]
   pull_request:
 
+# Nothing here writes. The default token permission on older repos is
+# contents: write, which this job would inherit for no reason.
+permissions:
+  contents: read
+
 jobs:
   semgrep-test:
     runs-on: [self-hosted, swamplink]
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      # Third-party actions are SHA-pinned, not tag-pinned: a tag is mutable, so
+      # `@v4` means "whatever that owner points it at today". This ruleset tells
+      # its users to pin exact revisions; the repo should hold itself to that.
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.2.2
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
           python-version: "3.12"
       - name: Install semgrep
@@ -19,3 +27,27 @@ jobs:
         run: semgrep --validate --config rules/
       - name: Run rule tests
         run: ./run-tests.sh
+
+  # The action in this repo runs inside other people's CI, so a template
+  # injection here is a vulnerability in their runners, not ours. That bug
+  # shipped once already (fixed in 3c90f54); this job is what makes it not
+  # ship twice.
+  workflow-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.2.2
+      - name: No GitHub expressions interpolated into shell scripts
+        run: ./scripts/check-workflow-injection.sh
+      - name: actionlint
+        run: |
+          set -euo pipefail
+          # Pinned by digest so a compromised tag cannot alter what lints us.
+          # Files are passed explicitly rather than letting actionlint discover
+          # them: discovery walks up for a git root, which is absent when the
+          # checkout is a worktree or a bare copy, and it fails with an error
+          # that reads like a lint failure rather than a setup problem.
+          docker run --rm \
+            -v "$PWD:/repo:ro" -w /repo \
+            --network none --cap-drop ALL --security-opt no-new-privileges \
+            rhysd/actionlint@sha256:b1934ee5f1c509618f2508e6eb47ee0d3520686341fec936f3b79331f9315667 \
+            -color .github/workflows/*.yml
