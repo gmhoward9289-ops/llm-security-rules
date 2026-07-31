@@ -1,0 +1,98 @@
+rules:
+  - id: exec-of-llm-output
+    languages: [python]
+    severity: ERROR
+    mode: taint
+    message: >-
+      Model output flows into eval()/exec(). An attacker who can influence the
+      model's output — directly through a prompt or indirectly through
+      retrieved documents — gets arbitrary code execution. Never execute model
+      output directly: use a sandboxed interpreter, an allowlisted operation
+      set, or structured tool calls instead.
+    metadata:
+      category: security
+      subcategory: [code-injection]
+      owasp-llm: "LLM05:2025 Improper Output Handling"
+      cwe: "CWE-95: Improper Neutralization of Directives in Dynamically Evaluated Code"
+      confidence: HIGH
+      references:
+        - https://genai.owasp.org/llmrisk/llm052025-improper-output-handling/
+    pattern-sources:
+      - pattern: $RESP.choices[0].message.content
+      - pattern: $RESP.choices[$I].message.content
+      - pattern: $RESP.content[0].text
+      - pattern: $RESP.content[$I].text
+      - pattern: $RESP.output_text
+      - pattern: $CHAIN.invoke(...).content
+      - pattern: $RESP.text()
+    pattern-sinks:
+      - pattern: eval(...)
+      - pattern: exec(...)
+
+  - id: shell-from-llm-output
+    languages: [python]
+    severity: ERROR
+    mode: taint
+    message: >-
+      Model output flows into a shell command. An attacker who can influence
+      the model's output — directly or via retrieved content — gets command
+      execution on this host. Do not pass model output to a shell; if the
+      model chooses commands, validate against a strict allowlist and pass
+      args as a list without shell=True.
+    metadata:
+      category: security
+      subcategory: [command-injection]
+      owasp-llm: "LLM05:2025 Improper Output Handling"
+      cwe: "CWE-78: Improper Neutralization of Special Elements used in an OS Command"
+      confidence: HIGH
+      references:
+        - https://genai.owasp.org/llmrisk/llm052025-improper-output-handling/
+    pattern-sources:
+      - pattern: $RESP.choices[0].message.content
+      - pattern: $RESP.choices[$I].message.content
+      - pattern: $RESP.content[0].text
+      - pattern: $RESP.content[$I].text
+      - pattern: $RESP.output_text
+      - pattern: $CHAIN.invoke(...).content
+      - pattern: $RESP.text()
+    pattern-sinks:
+      - pattern: os.system(...)
+      - pattern: os.popen(...)
+      - pattern: subprocess.run($CMD, ...)
+      - pattern: subprocess.call($CMD, ...)
+      - pattern: subprocess.check_output($CMD, ...)
+      - pattern: subprocess.Popen($CMD, ...)
+
+  - id: sql-from-llm-output
+    languages: [python]
+    severity: ERROR
+    mode: taint
+    message: >-
+      Model output flows into a SQL execute call. Model-generated SQL is
+      attacker-influenced input: prompt injection or poisoned retrieval can
+      make the model emit destructive or exfiltrating queries. Run
+      model-generated SQL only against a read-only connection with a
+      statement allowlist, or use parameterized queries built in code.
+    metadata:
+      category: security
+      subcategory: [sql-injection]
+      owasp-llm: "LLM05:2025 Improper Output Handling"
+      cwe: "CWE-89: Improper Neutralization of Special Elements used in an SQL Command"
+      confidence: MEDIUM
+      references:
+        - https://genai.owasp.org/llmrisk/llm052025-improper-output-handling/
+    pattern-sources:
+      - pattern: $RESP.choices[0].message.content
+      - pattern: $RESP.choices[$I].message.content
+      - pattern: $RESP.content[0].text
+      - pattern: $RESP.content[$I].text
+      - pattern: $RESP.output_text
+      - pattern: $CHAIN.invoke(...).content
+      - pattern: $RESP.text()
+    pattern-sinks:
+      - patterns:
+          - pattern: $CUR.execute($SQL, ...)
+          - focus-metavariable: $SQL
+      - patterns:
+          - pattern: $CUR.executescript($SQL)
+          - focus-metavariable: $SQL

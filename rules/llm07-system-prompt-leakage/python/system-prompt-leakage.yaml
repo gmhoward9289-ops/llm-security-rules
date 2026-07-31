@@ -1,0 +1,63 @@
+rules:
+  - id: credentials-in-system-prompt
+    languages: [python]
+    severity: ERROR
+    message: >-
+      System prompt contains what looks like a credential (password, API key,
+      secret, or token assignment). System prompts leak — through extraction
+      attacks, logging, and provider-side storage — so anything in them is
+      effectively public. Move the credential out of the prompt; give tools
+      access to secrets server-side instead of telling the model.
+    metadata:
+      category: security
+      subcategory: [secrets]
+      owasp-llm: "LLM07:2025 System Prompt Leakage"
+      cwe: "CWE-798: Use of Hard-coded Credentials"
+      confidence: MEDIUM
+      references:
+        - https://genai.owasp.org/llmrisk/llm072025-system-prompt-leakage/
+    patterns:
+      - pattern-either:
+          - patterns:
+              - pattern: |
+                  {"role": "system", "content": $CONTENT}
+              - metavariable-regex:
+                  metavariable: $CONTENT
+                  regex: (?is)^["'f].*(password|api[_-]?key|secret|token)\s*(is\s+|[:=])\s*\S+
+          - patterns:
+              - pattern: $CLIENT.messages.create(..., system=$SYS, ...)
+              - metavariable-regex:
+                  metavariable: $SYS
+                  regex: (?is)^["'f].*(password|api[_-]?key|secret|token)\s*(is\s+|[:=])\s*\S+
+              - focus-metavariable: $SYS
+
+  - id: system-prompt-in-logs
+    languages: [python]
+    severity: WARNING
+    message: >-
+      System prompt written to logs. Logged prompts end up in log
+      aggregators, crash reports, and backups with far weaker access control
+      than the code — a quiet system-prompt disclosure channel, and a
+      credential leak if the prompt embeds secrets. Log a hash or version tag
+      of the prompt instead of its contents.
+    metadata:
+      category: security
+      subcategory: [logging]
+      owasp-llm: "LLM07:2025 System Prompt Leakage"
+      cwe: "CWE-532: Insertion of Sensitive Information into Log File"
+      confidence: MEDIUM
+      references:
+        - https://genai.owasp.org/llmrisk/llm072025-system-prompt-leakage/
+    patterns:
+      - pattern-either:
+          - patterns:
+              - pattern-either:
+                  - pattern: logging.$METHOD(..., $SP, ...)
+                  - pattern: $LOGGER.$METHOD(..., $SP, ...)
+              - metavariable-regex:
+                  metavariable: $METHOD
+                  regex: ^(debug|info|warning|warn|error|critical|exception|log)$
+          - pattern: print($SP)
+      - metavariable-regex:
+          metavariable: $SP
+          regex: (?i)^(sys(tem)?_?prompt|system_?message|system_?instructions?)$

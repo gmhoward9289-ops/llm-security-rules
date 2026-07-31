@@ -1,0 +1,49 @@
+rules:
+  - id: request-data-in-system-prompt
+    languages: [python]
+    severity: ERROR
+    mode: taint
+    message: >-
+      HTTP request data flows into a system prompt. The system role is the
+      trust boundary of an LLM call: content there is treated as instructions,
+      so request-controlled text in it is direct prompt injection — an
+      attacker rewrites your agent's rules. Put user data in a user-role
+      message and keep the system prompt static.
+    metadata:
+      category: security
+      subcategory: [prompt-injection]
+      owasp-llm: "LLM01:2025 Prompt Injection"
+      cwe: "CWE-77: Improper Neutralization of Special Elements used in a Command"
+      confidence: HIGH
+      references:
+        - https://genai.owasp.org/llmrisk/llm012025-prompt-injection/
+    pattern-sources:
+      - pattern: flask.request.args
+      - pattern: flask.request.form
+      - pattern: flask.request.values
+      - pattern: flask.request.json
+      - pattern: flask.request.get_json(...)
+      - pattern: flask.request.data
+      - pattern: request.args
+      - pattern: request.form
+      - pattern: request.values
+      - pattern: request.json
+      - pattern: request.get_json(...)
+      - pattern: request.data
+      - pattern: request.GET
+      - pattern: request.POST
+      - pattern: request.body
+    pattern-sinks:
+      - patterns:
+          - pattern: |
+              {"role": "system", "content": $CONTENT}
+          - focus-metavariable: $CONTENT
+      - patterns:
+          - pattern: $CLIENT.messages.create(..., system=$SYS, ...)
+          - focus-metavariable: $SYS
+      - patterns:
+          - pattern: SystemMessage(content=$CONTENT, ...)
+          - focus-metavariable: $CONTENT
+      - patterns:
+          - pattern: SystemMessage($CONTENT, ...)
+          - focus-metavariable: $CONTENT

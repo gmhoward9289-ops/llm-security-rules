@@ -1,0 +1,30 @@
+rules:
+  - id: hardcoded-api-key-in-llm-client
+    languages: [python]
+    severity: ERROR
+    message: >-
+      LLM client constructed with a hardcoded API key string literal. Anyone
+      with repo access can read and use this key. Load it from the environment
+      (the SDKs read OPENAI_API_KEY / ANTHROPIC_API_KEY automatically) or a
+      secrets manager, and rotate the committed key.
+    metadata:
+      category: security
+      subcategory: [secrets]
+      owasp-llm: "LLM02:2025 Sensitive Information Disclosure"
+      cwe: "CWE-798: Use of Hard-coded Credentials"
+      confidence: HIGH
+      references:
+        - https://genai.owasp.org/llmrisk/llm022025-sensitive-information-disclosure/
+    patterns:
+      - pattern-either:
+          - pattern: openai.OpenAI(..., api_key="...", ...)
+          - pattern: OpenAI(..., api_key="...", ...)
+          - pattern: AsyncOpenAI(..., api_key="...", ...)
+          - pattern: anthropic.Anthropic(..., api_key="...", ...)
+          - pattern: Anthropic(..., api_key="...", ...)
+          - pattern: AsyncAnthropic(..., api_key="...", ...)
+          - pattern: openai.api_key = "..."
+          - pattern: ChatOpenAI(..., api_key="...", ...)
+          - pattern: ChatOpenAI(..., openai_api_key="...", ...)
+          - pattern: ChatAnthropic(..., api_key="...", ...)
+          - pattern: ChatAnthropic(..., anthropic_api_key="...", ...)
