@@ -20,7 +20,7 @@ fuzzier heuristics stay out until they can be made precise.
 Scan a project with the ruleset directly:
 
 ```bash
-semgrep scan --config https://github.com/OWNER/llm-security-rules/archive/refs/heads/main.tar.gz .
+semgrep scan --config https://github.com/gmhoward9289-ops/llm-security-rules/archive/refs/heads/main.tar.gz .
 ```
 
 or clone and point at `rules/`:
@@ -37,14 +37,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: OWNER/llm-security-rules@v1
+      - uses: gmhoward9289-ops/llm-security-rules@v1
 ```
 
 ### pre-commit
 
 ```yaml
 repos:
-  - repo: https://github.com/OWNER/llm-security-rules
+  - repo: https://github.com/gmhoward9289-ops/llm-security-rules
     rev: v0.2.0
     hooks:
       - id: llm-security-rules
