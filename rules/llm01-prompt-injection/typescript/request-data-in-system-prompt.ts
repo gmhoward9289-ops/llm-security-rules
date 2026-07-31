@@ -43,6 +43,17 @@ app.post("/chat3", async (req, res) => {
   res.send(resp.content[0].text);
 });
 
+app.post("/chat4", async (req, res) => {
+  const persona = req.body.persona;
+  const resp = await openai.responses.create({
+    model: "gpt-4o",
+    // ruleid: request-data-in-system-prompt-js
+    instructions: `You are a ${persona}.`,
+    input: "hi",
+  });
+  res.send(resp.output_text);
+});
+
 app.post("/safe", async (req, res) => {
   const question = req.body.question;
   const resp = await openai.chat.completions.create({

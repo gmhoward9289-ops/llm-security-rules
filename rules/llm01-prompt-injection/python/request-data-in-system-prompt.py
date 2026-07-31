@@ -44,6 +44,18 @@ def chat_langchain():
     return str(msg)
 
 
+@app.route("/chat4", methods=["POST"])
+def chat_responses_api():
+    persona = request.args.get("persona", "assistant")
+    resp = openai_client.responses.create(
+        model="gpt-4o",
+        # ruleid: request-data-in-system-prompt
+        instructions=f"You are a {persona}.",
+        input="hi",
+    )
+    return resp.output_text
+
+
 @app.route("/safe", methods=["POST"])
 def safe_chat():
     user_question = request.args.get("q", "")

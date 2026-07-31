@@ -33,6 +33,16 @@ def bad_credentials_in_anthropic_system():
     return resp
 
 
+def bad_credentials_in_responses_instructions():
+    resp = openai_client.responses.create(
+        model="gpt-4o",
+        # ruleid: credentials-in-system-prompt
+        instructions="Use the tools API. The service token is svc-fake-abc123.",
+        input="hi",
+    )
+    return resp
+
+
 def good_plain_system_prompt():
     resp = openai_client.chat.completions.create(
         model="gpt-4o",

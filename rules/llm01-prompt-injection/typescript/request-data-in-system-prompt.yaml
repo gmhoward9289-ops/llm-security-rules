@@ -41,3 +41,7 @@ rules:
           - pattern: |
               $CLIENT.messages.create({..., system: $SYS, ...})
           - focus-metavariable: $SYS
+      - patterns:
+          - pattern: |
+              $CLIENT.responses.create({..., instructions: $SYS, ...})
+          - focus-metavariable: $SYS

@@ -30,6 +30,12 @@ rules:
                   metavariable: $SYS
                   regex: (?is)^["'f].*(password|api[_-]?key|secret|token)\s*(is\s+|[:=])\s*\S+
               - focus-metavariable: $SYS
+          - patterns:
+              - pattern: $CLIENT.responses.create(..., instructions=$INS, ...)
+              - metavariable-regex:
+                  metavariable: $INS
+                  regex: (?is)^["'f].*(password|api[_-]?key|secret|token)\s*(is\s+|[:=])\s*\S+
+              - focus-metavariable: $INS
 
   - id: system-prompt-in-logs
     languages: [python]

@@ -14,6 +14,14 @@ openai_env = os.environ["OPENAI_API_KEY"]
 # ok: openai-api-key-literal
 short_sk = "sk-test123"
 
+# Masked keys (as printed by CLIs and log scrubbers) must not fire:
+# ok: openai-api-key-literal
+masked = "sk-proj-****T3BlbkFJ****"
+
+# Rules are languages: [regex], so keys leaked in comments still fire:
+# ruleid: openai-api-key-literal
+# TODO remove before commit: sk-abcdefghijklmnopqrstuvwxyzABCDEF1234567890123456
+
 # --- anthropic-api-key-literal ---
 
 # ruleid: anthropic-api-key-literal
@@ -26,6 +34,12 @@ anthropic_env = os.getenv("ANTHROPIC_API_KEY")
 
 # ruleid: google-api-key-literal
 GEMINI_KEY = "AIzaSyA1bC2dE3fG4hI5jK6lM7nO8pQ9rS0tUvW"
+
+# Firebase web client keys share the AIza shape and are designed to ship
+# publicly — the rule still fires (same bytes), which is why it is WARNING
+# severity with triage guidance instead of ERROR:
+# ruleid: google-api-key-literal
+FIREBASE_WEB_KEY = "AIzaSyB9xY8wV7uT6sR5qP4oN3mL2kJ1iH0gFeD"
 
 # ok: google-api-key-literal
 prefix_only = "AIza"
