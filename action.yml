@@ -19,13 +19,25 @@ runs:
   steps:
     - name: Install semgrep
       shell: bash
+      env:
+        SEMGREP_VERSION: ${{ inputs.semgrep-version }}
       run: |
-        if [ -n "${{ inputs.semgrep-version }}" ]; then
-          pip install "semgrep==${{ inputs.semgrep-version }}"
+        if [ -n "$SEMGREP_VERSION" ]; then
+          pip install "semgrep==$SEMGREP_VERSION"
         else
           pip install semgrep
         fi
     - name: Scan
       shell: bash
+      env:
+        SCAN_PATHS: ${{ inputs.paths }}
       run: |
-        semgrep scan --config "${{ github.action_path }}/rules" --error ${{ inputs.paths }}
+        # SCAN_PATHS is intentionally unquoted: inputs.paths is documented as
+        # space-separated, so word-splitting into multiple path args is the
+        # point. Routing it through env: (rather than interpolating ${{ }}
+        # directly into the script) is what matters -- GitHub expands ${{ }}
+        # textually before bash ever sees the script, so a raw interpolation
+        # lets shell metacharacters in the input become shell syntax. A env
+        # var is passed as data; bash only word-splits it, it doesn't
+        # re-parse it as code.
+        semgrep scan --config "${{ github.action_path }}/rules" --error $SCAN_PATHS

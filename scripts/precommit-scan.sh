@@ -10,4 +10,4 @@ if ! command -v semgrep >/dev/null 2>&1; then
   exit 1
 fi
 
-exec semgrep scan --config "$RULES_DIR" --error --quiet "$@"
+exec semgrep scan --config "$RULES_DIR" --error --quiet -- "$@"
