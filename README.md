@@ -37,7 +37,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: gmhoward9289-ops/llm-security-rules@v1
+      - uses: gmhoward9289-ops/llm-security-rules@v0.2.0
 ```
 
 ### pre-commit
