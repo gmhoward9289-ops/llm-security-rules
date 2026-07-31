@@ -1,0 +1,29 @@
+rules:
+  - id: shell-from-llm-output-go
+    languages: [go]
+    severity: ERROR
+    mode: taint
+    message: >-
+      Model output flows into exec.Command. An attacker who can influence
+      the model's output — directly through a prompt or indirectly through
+      retrieved content — gets command execution on this host. Do not pass
+      model output to a shell; if the model chooses commands, validate
+      against a strict allowlist and pass fixed binaries with argument
+      vectors.
+    metadata:
+      category: security
+      subcategory: [command-injection]
+      owasp-llm: "LLM05:2025 Improper Output Handling"
+      cwe: "CWE-78: Improper Neutralization of Special Elements used in an OS Command"
+      confidence: HIGH
+      references:
+        - https://genai.owasp.org/llmrisk/llm052025-improper-output-handling/
+    pattern-sources:
+      - pattern: $RESP.Choices[0].Message.Content
+      - pattern: $RESP.Choices[$I].Message.Content
+      - pattern: $RESP.Content[0].Text
+      - pattern: $RESP.Content[$I].Text
+      - pattern: $RESP.OutputText()
+    pattern-sinks:
+      - pattern: exec.Command(...)
+      - pattern: exec.CommandContext(...)

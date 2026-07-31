@@ -1,0 +1,33 @@
+rules:
+  - id: dangerous-sink-in-tool-js
+    languages: [typescript, javascript]
+    severity: ERROR
+    message: >-
+      An agent tool definition runs eval or a child_process shell call on a
+      dynamic value. Tool arguments are chosen by the model, and the model
+      is steered by whatever enters its context — a prompt-injected document
+      can make the agent call this tool with an attacker's payload.
+      Constrain the tool: validate arguments against an allowlist, use
+      execFile with a fixed binary and args array, or expose a narrower
+      operation than "run code".
+    metadata:
+      category: security
+      subcategory: [command-injection, code-injection]
+      owasp-llm: "LLM06:2025 Excessive Agency"
+      cwe: "CWE-78: Improper Neutralization of Special Elements used in an OS Command"
+      confidence: HIGH
+      references:
+        - https://genai.owasp.org/llmrisk/llm062025-excessive-agency/
+    patterns:
+      - pattern-inside: tool(...)
+      - pattern-either:
+          - pattern: eval($X)
+          - pattern: new Function($X)
+          - pattern: child_process.exec($X, ...)
+          - pattern: child_process.execSync($X, ...)
+          - pattern: exec($X, ...)
+          - pattern: execSync($X, ...)
+      - metavariable-pattern:
+          metavariable: $X
+          patterns:
+            - pattern-not: '"..."'

@@ -56,6 +56,19 @@ def chat_responses_api():
     return resp.output_text
 
 
+def django_chat(request):
+    tone = request.POST.get("tone", "friendly")
+    resp = openai_client.chat.completions.create(
+        model="gpt-4o",
+        messages=[
+            # ruleid: request-data-in-system-prompt
+            {"role": "system", "content": "Answer in a " + tone + " voice."},
+            {"role": "user", "content": "hi"},
+        ],
+    )
+    return resp.choices[0].message.content
+
+
 @app.route("/safe", methods=["POST"])
 def safe_chat():
     user_question = request.args.get("q", "")

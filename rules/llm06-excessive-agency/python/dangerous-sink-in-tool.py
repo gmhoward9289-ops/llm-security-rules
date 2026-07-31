@@ -34,6 +34,14 @@ def exec_snippet(snippet: str) -> None:
     exec(snippet)
 
 
+# CrewAI exports the same @tool decorator shape (from crewai.tools import tool):
+@tool("CrewAI shell tool")
+def crewai_shell(command: str) -> str:
+    """Run a command for the crew."""
+    # ruleid: dangerous-sink-in-tool
+    return subprocess.run(command, shell=True, capture_output=True).stdout.decode()
+
+
 @tool
 def word_count(text: str) -> int:
     """Count words in text."""

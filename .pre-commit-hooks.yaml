@@ -10,5 +10,5 @@
   description: Scan staged files with the LLM application security ruleset.
   entry: scripts/precommit-scan.sh
   language: script
-  types_or: [python, ts, tsx, javascript, jsx]
+  types_or: [python, ts, tsx, javascript, jsx, go, dotenv]
   pass_filenames: true

@@ -1,0 +1,20 @@
+rules:
+  - id: hardcoded-api-key-in-llm-client-go
+    languages: [go]
+    severity: ERROR
+    message: >-
+      Client configured with a hardcoded API key string literal via
+      WithAPIKey. Anyone with repo access can read and use this key. Load it
+      from the environment (the OpenAI/Anthropic Go SDKs read
+      OPENAI_API_KEY / ANTHROPIC_API_KEY automatically when no option is
+      passed) and rotate the committed key.
+    metadata:
+      category: security
+      subcategory: [secrets]
+      owasp-llm: "LLM02:2025 Sensitive Information Disclosure"
+      cwe: "CWE-798: Use of Hard-coded Credentials"
+      confidence: HIGH
+      references:
+        - https://genai.owasp.org/llmrisk/llm022025-sensitive-information-disclosure/
+    patterns:
+      - pattern: $OPT.WithAPIKey("...")

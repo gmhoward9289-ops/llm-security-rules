@@ -1,0 +1,20 @@
+rules:
+  - id: trust-remote-code-enabled
+    languages: [python]
+    severity: ERROR
+    message: >-
+      trust_remote_code=True executes arbitrary Python shipped inside the
+      model repository at load time. A compromised or typosquatted Hugging
+      Face repo becomes code execution on this host the moment the model
+      loads. Prefer models that work without it; if the architecture truly
+      requires it, pin an exact revision= commit hash you have reviewed.
+    metadata:
+      category: security
+      subcategory: [supply-chain]
+      owasp-llm: "LLM03:2025 Supply Chain"
+      cwe: "CWE-494: Download of Code Without Integrity Check"
+      confidence: HIGH
+      references:
+        - https://genai.owasp.org/llmrisk/llm032025-supply-chain/
+    patterns:
+      - pattern: $LOADER(..., trust_remote_code=True, ...)
