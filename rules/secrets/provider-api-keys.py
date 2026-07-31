@@ -22,12 +22,12 @@ ANTHROPIC_KEY = "sk-ant-api03-AbCdEfGhIjKlMnOpQrStUvWxYz0123456789_-AbCd"
 # ok: anthropic-api-key-literal
 anthropic_env = os.getenv("ANTHROPIC_API_KEY")
 
-# --- google-ai-api-key-literal ---
+# --- google-api-key-literal ---
 
-# ruleid: google-ai-api-key-literal
+# ruleid: google-api-key-literal
 GEMINI_KEY = "AIzaSyA1bC2dE3fG4hI5jK6lM7nO8pQ9rS0tUvW"
 
-# ok: google-ai-api-key-literal
+# ok: google-api-key-literal
 prefix_only = "AIza"
 
 # --- huggingface-token-literal ---
