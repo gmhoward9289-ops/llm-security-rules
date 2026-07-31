@@ -24,7 +24,8 @@ rules:
       - pattern: $RESP.content[$I].text
       - pattern: $RESP.output_text
       - pattern: generateText(...)
-      - pattern: $RESP.text()
+      - pattern: $RESP.response.text()
+      - pattern: $MODEL.generateContent(...)
     pattern-sinks:
       - pattern: eval(...)
       - pattern: new Function(...)
@@ -57,7 +58,8 @@ rules:
       - pattern: $RESP.content[$I].text
       - pattern: $RESP.output_text
       - pattern: generateText(...)
-      - pattern: $RESP.text()
+      - pattern: $RESP.response.text()
+      - pattern: $MODEL.generateContent(...)
     pattern-sinks:
       - pattern: child_process.exec(...)
       - pattern: child_process.execSync(...)

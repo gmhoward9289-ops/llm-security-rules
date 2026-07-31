@@ -56,6 +56,21 @@ def run_generated_sql(question: str, conn: sqlite3.Connection):
     cur.execute(sql)
 
 
+def run_gemini_generated_code(genai_client, prompt: str):
+    code = genai_client.models.generate_content(
+        model="gemini-2.5-pro", contents=prompt
+    ).text
+    # ruleid: exec-of-llm-output
+    exec(code)
+
+
+def run_llamaindex_generated_sql(query_engine, conn, question: str):
+    sql = query_engine.query(question).response
+    cur = conn.cursor()
+    # ruleid: sql-from-llm-output
+    cur.execute(sql)
+
+
 def safe_static_exec():
     # ok: exec-of-llm-output
     exec("print('hello')")

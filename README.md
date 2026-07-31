@@ -67,13 +67,16 @@ application code — this puts the check where the code comes from.
 | `shell-from-llm-output` | LLM05 | py, ts/js | taint |
 | `sql-from-llm-output` | LLM05 | py | taint |
 | `dangerously-set-llm-html` | LLM05 | ts/js (React) | taint |
+| `dangerous-sink-in-tool` | LLM06 Excessive Agency | py | taint |
 | `credentials-in-system-prompt` | LLM07 System Prompt Leakage | py | pattern |
 | `system-prompt-in-logs` | LLM07 | py | pattern |
 
-Taint-mode rules track model output (`resp.choices[0].message.content`,
-`resp.content[0].text`, `resp.output_text`, `generateText(...)`) or HTTP
-request data through assignments and destructuring to dangerous sinks, so
-renaming a variable doesn't dodge the rule.
+Taint-mode rules track model output (OpenAI `choices[].message.content` /
+`output_text`, Anthropic `content[].text`, Vercel `generateText(...)`,
+Google GenAI `generate_content(...).text` / `response.text()`, LangChain
+`invoke(...).content`, LlamaIndex `query(...).response`), HTTP request
+data, or agent-tool arguments through assignments and destructuring to
+dangerous sinks, so renaming a variable doesn't dodge the rule.
 
 ## Running the tests
 
@@ -88,12 +91,12 @@ not. CI runs `semgrep --validate` plus the full suite on every PR.
 ## Roadmap
 
 - **Full OWASP LLM Top 10 coverage** — LLM03 supply chain
-  (`trust_remote_code`, unpinned model refs), LLM06 excessive agency
-  (over-broad tool definitions), LLM08 vector/embedding weaknesses.
-- **Framework breadth** — LlamaIndex, CrewAI, AutoGen, Spring AI (Java),
-  more LangChain surface.
-- **Agent/MCP patterns** — tool functions that shell out, MCP servers with
-  unvalidated inputs.
+  (`trust_remote_code`, unpinned model refs), LLM08 vector/embedding
+  weaknesses, LLM10 unbounded consumption.
+- **Framework breadth** — CrewAI, AutoGen, Spring AI (Java), more
+  LangChain/LlamaIndex surface, TS coverage for the tool-use rules.
+- **Runtime companion** — a documented promptfoo/garak CI stage for the
+  dynamic prompt-injection testing static rules can't do.
 - **Benchmarked precision** — a labeled corpus of real-world LLM app code
   with published precision/recall per rule.
 

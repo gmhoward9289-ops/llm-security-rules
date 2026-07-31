@@ -1,0 +1,49 @@
+rules:
+  - id: dangerous-sink-in-tool
+    languages: [python]
+    severity: ERROR
+    mode: taint
+    message: >-
+      An agent tool passes its argument into eval/exec or a shell. Tool
+      arguments are chosen by the model, and the model is steered by whatever
+      enters its context — a prompt-injected email or document can make the
+      agent call this tool with an attacker's payload. Constrain the tool:
+      validate arguments against an allowlist, use subprocess with an args
+      list, or expose a narrower operation than "run code".
+    metadata:
+      category: security
+      subcategory: [command-injection, code-injection]
+      owasp-llm: "LLM06:2025 Excessive Agency"
+      cwe: "CWE-78: Improper Neutralization of Special Elements used in an OS Command"
+      confidence: HIGH
+      references:
+        - https://genai.owasp.org/llmrisk/llm062025-excessive-agency/
+    pattern-sources:
+      - patterns:
+          - pattern-either:
+              - pattern: |
+                  @tool
+                  def $FUNC(..., $ARG, ...):
+                    ...
+              - pattern: |
+                  @tool(...)
+                  def $FUNC(..., $ARG, ...):
+                    ...
+              - pattern: |
+                  @$MCP.tool()
+                  def $FUNC(..., $ARG, ...):
+                    ...
+              - pattern: |
+                  @$MCP.tool(...)
+                  def $FUNC(..., $ARG, ...):
+                    ...
+          - focus-metavariable: $ARG
+    pattern-sinks:
+      - pattern: eval(...)
+      - pattern: exec(...)
+      - pattern: os.system(...)
+      - pattern: os.popen(...)
+      - pattern: subprocess.run($CMD, ...)
+      - pattern: subprocess.call($CMD, ...)
+      - pattern: subprocess.check_output($CMD, ...)
+      - pattern: subprocess.Popen($CMD, ...)

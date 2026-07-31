@@ -24,7 +24,9 @@ rules:
       - pattern: $RESP.content[$I].text
       - pattern: $RESP.output_text
       - pattern: $CHAIN.invoke(...).content
-      - pattern: $RESP.text()
+      - pattern: $CLIENT.models.generate_content(...).text
+      - pattern: $MODEL.generate_content(...).text
+      - pattern: $QE.query(...).response
     pattern-sinks:
       - pattern: eval(...)
       - pattern: exec(...)
@@ -54,7 +56,9 @@ rules:
       - pattern: $RESP.content[$I].text
       - pattern: $RESP.output_text
       - pattern: $CHAIN.invoke(...).content
-      - pattern: $RESP.text()
+      - pattern: $CLIENT.models.generate_content(...).text
+      - pattern: $MODEL.generate_content(...).text
+      - pattern: $QE.query(...).response
     pattern-sinks:
       - pattern: os.system(...)
       - pattern: os.popen(...)
@@ -88,7 +92,9 @@ rules:
       - pattern: $RESP.content[$I].text
       - pattern: $RESP.output_text
       - pattern: $CHAIN.invoke(...).content
-      - pattern: $RESP.text()
+      - pattern: $CLIENT.models.generate_content(...).text
+      - pattern: $MODEL.generate_content(...).text
+      - pattern: $QE.query(...).response
     pattern-sinks:
       - patterns:
           - pattern: $CUR.execute($SQL, ...)

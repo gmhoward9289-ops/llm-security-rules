@@ -44,6 +44,13 @@ export async function runGeneratedCommandSync(prompt: string) {
   execSync(cmd as string);
 }
 
+export async function runGeminiGeneratedCode(model: any, prompt: string) {
+  const result = await model.generateContent(prompt);
+  const code = result.response.text();
+  // ruleid: eval-of-llm-output-js
+  eval(code);
+}
+
 export function safeStaticEval() {
   // ok: eval-of-llm-output-js
   eval("1 + 1");
