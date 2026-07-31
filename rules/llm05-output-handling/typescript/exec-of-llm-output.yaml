@@ -1,0 +1,65 @@
+rules:
+  - id: eval-of-llm-output-js
+    languages: [typescript, javascript]
+    severity: ERROR
+    mode: taint
+    message: >-
+      Model output flows into eval()/new Function(). An attacker who can
+      influence the model's output — directly through a prompt or indirectly
+      through retrieved content — gets arbitrary code execution. Never
+      execute model output directly: use a sandboxed interpreter or
+      structured tool calls instead.
+    metadata:
+      category: security
+      subcategory: [code-injection]
+      owasp-llm: "LLM05:2025 Improper Output Handling"
+      cwe: "CWE-95: Improper Neutralization of Directives in Dynamically Evaluated Code"
+      confidence: HIGH
+      references:
+        - https://genai.owasp.org/llmrisk/llm052025-improper-output-handling/
+    pattern-sources:
+      - pattern: $RESP.choices[0].message.content
+      - pattern: $RESP.choices[$I].message.content
+      - pattern: $RESP.content[0].text
+      - pattern: $RESP.content[$I].text
+      - pattern: $RESP.output_text
+      - pattern: generateText(...)
+      - pattern: $RESP.text()
+    pattern-sinks:
+      - pattern: eval(...)
+      - pattern: new Function(...)
+      - pattern: vm.runInContext(...)
+      - pattern: vm.runInNewContext(...)
+      - pattern: vm.runInThisContext(...)
+
+  - id: shell-from-llm-output-js
+    languages: [typescript, javascript]
+    severity: ERROR
+    mode: taint
+    message: >-
+      Model output flows into a child_process shell call. An attacker who can
+      influence the model's output — directly or via retrieved content — gets
+      command execution on this host. Do not pass model output to a shell; if
+      the model chooses commands, validate against a strict allowlist and use
+      execFile with an args array.
+    metadata:
+      category: security
+      subcategory: [command-injection]
+      owasp-llm: "LLM05:2025 Improper Output Handling"
+      cwe: "CWE-78: Improper Neutralization of Special Elements used in an OS Command"
+      confidence: HIGH
+      references:
+        - https://genai.owasp.org/llmrisk/llm052025-improper-output-handling/
+    pattern-sources:
+      - pattern: $RESP.choices[0].message.content
+      - pattern: $RESP.choices[$I].message.content
+      - pattern: $RESP.content[0].text
+      - pattern: $RESP.content[$I].text
+      - pattern: $RESP.output_text
+      - pattern: generateText(...)
+      - pattern: $RESP.text()
+    pattern-sinks:
+      - pattern: child_process.exec(...)
+      - pattern: child_process.execSync(...)
+      - pattern: exec(...)
+      - pattern: execSync(...)

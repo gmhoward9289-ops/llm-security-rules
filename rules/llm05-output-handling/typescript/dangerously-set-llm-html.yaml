@@ -1,0 +1,35 @@
+rules:
+  - id: dangerously-set-llm-html
+    languages: [typescript, javascript]
+    severity: ERROR
+    mode: taint
+    message: >-
+      Model output rendered with dangerouslySetInnerHTML. Model output is
+      attacker-influenced (prompt injection, poisoned retrieval), so this is
+      stored XSS: a script tag or event handler in the response runs in your
+      users' browsers. Sanitize with DOMPurify before rendering, or render as
+      plain text / through a Markdown renderer with HTML disabled.
+    metadata:
+      category: security
+      subcategory: [xss]
+      owasp-llm: "LLM05:2025 Improper Output Handling"
+      cwe: "CWE-79: Improper Neutralization of Input During Web Page Generation"
+      confidence: HIGH
+      references:
+        - https://genai.owasp.org/llmrisk/llm052025-improper-output-handling/
+    pattern-sources:
+      - pattern: $RESP.choices[0].message.content
+      - pattern: $RESP.choices[$I].message.content
+      - pattern: $RESP.content[0].text
+      - pattern: $RESP.content[$I].text
+      - pattern: $RESP.output_text
+      - pattern: generateText(...)
+      - pattern: $RESP.text()
+    pattern-sinks:
+      - patterns:
+          - pattern: |
+              <$EL dangerouslySetInnerHTML={{__html: $HTML}} ... />
+          - focus-metavariable: $HTML
+    pattern-sanitizers:
+      - pattern: DOMPurify.sanitize(...)
+      - pattern: sanitizeHtml(...)
