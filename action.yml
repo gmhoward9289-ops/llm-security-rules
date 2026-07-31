@@ -1,0 +1,31 @@
+name: llm-security-rules
+description: >-
+  Scan the repository for LLM application security issues (OWASP LLM Top 10
+  mapped) using semgrep and the llm-security-rules ruleset.
+branding:
+  icon: shield
+  color: purple
+inputs:
+  paths:
+    description: Space-separated paths to scan.
+    required: false
+    default: "."
+  semgrep-version:
+    description: semgrep version to install.
+    required: false
+    default: ""
+runs:
+  using: composite
+  steps:
+    - name: Install semgrep
+      shell: bash
+      run: |
+        if [ -n "${{ inputs.semgrep-version }}" ]; then
+          pip install "semgrep==${{ inputs.semgrep-version }}"
+        else
+          pip install semgrep
+        fi
+    - name: Scan
+      shell: bash
+      run: |
+        semgrep scan --config "${{ github.action_path }}/rules" --error ${{ inputs.paths }}

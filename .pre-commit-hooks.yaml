@@ -1,0 +1,14 @@
+# Consume from a repo that uses pre-commit (requires semgrep on PATH):
+#
+#   repos:
+#     - repo: https://github.com/<owner>/llm-security-rules
+#       rev: v0.2.0
+#       hooks:
+#         - id: llm-security-rules
+- id: llm-security-rules
+  name: llm-security-rules (semgrep)
+  description: Scan staged files with the LLM application security ruleset.
+  entry: scripts/precommit-scan.sh
+  language: script
+  types_or: [python, ts, tsx, javascript, jsx]
+  pass_filenames: true
