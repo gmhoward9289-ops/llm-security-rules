@@ -11,9 +11,14 @@ inputs:
     required: false
     default: "."
   semgrep-version:
-    description: semgrep version to install.
+    description: >-
+      semgrep version to install. Defaults to a pinned release rather than
+      whatever PyPI currently serves -- an unpinned install would make every
+      downstream CI run trust a package this action never reviewed, which is
+      the supply-chain failure llm03's trust-remote-code-enabled rule exists
+      to flag. Bump this deliberately; do not replace it with a floating install.
     required: false
-    default: ""
+    default: "1.172.0"
 runs:
   using: composite
   steps:
@@ -22,9 +27,15 @@ runs:
       env:
         SEMGREP_VERSION: ${{ inputs.semgrep-version }}
       run: |
+        set -euo pipefail
         if [ -n "$SEMGREP_VERSION" ]; then
           pip install "semgrep==$SEMGREP_VERSION"
         else
+          # Reachable only if a caller explicitly passes an empty string, which
+          # opts them out of the pinned default. Honour it -- someone may need
+          # to test against a prerelease -- but say so loudly, because the
+          # result is that this action installs unreviewed code into their CI.
+          echo "::warning::semgrep-version is empty; installing an unpinned semgrep. Pin a version for reproducible, reviewable CI."
           pip install semgrep
         fi
     - name: Scan
@@ -33,16 +44,22 @@ runs:
         SCAN_PATHS: ${{ inputs.paths }}
         RULES_DIR: ${{ github.action_path }}/rules
       run: |
-        # Nothing is interpolated into this script body. Every ${{ }} above is
-        # bound to an env var instead, because GitHub expands ${{ }} textually
-        # before bash ever sees the script -- a raw interpolation lets shell
-        # metacharacters in a value become shell syntax. An env var is passed
-        # as data; bash word-splits it but never re-parses it as code.
+        # No GitHub expression is interpolated into this script body; every
+        # value above is bound to an env var instead. GitHub expands
+        # dollar-double-brace expressions textually before bash ever parses
+        # the file, so an interpolated input becomes program text and its
+        # metacharacters become shell syntax; an env var arrives as data,
+        # which bash word-splits but never re-parses as code.
+        # scripts/check-workflow-injection.sh enforces this -- and it flags
+        # expressions in comments too, since textual expansion does not
+        # respect a leading '#'. That is why this note spells the syntax out
+        # instead of quoting it.
         #
         # github.action_path is GitHub-controlled rather than user-controlled,
-        # so interpolating it was not exploitable. It is bound here anyway: one
-        # exception to "no interpolation in a run block" is what a later edit
-        # copies when adding a value that IS attacker-controlled.
+        # so interpolating it would not be exploitable (the checker's own
+        # allowlist agrees). It is bound here anyway: one exception to "no
+        # interpolation in a run block" is what a later edit copies when
+        # adding a value that IS attacker-controlled.
         #
         # SCAN_PATHS is deliberately unquoted -- inputs.paths is documented as
         # space-separated, so word-splitting into multiple path args is the

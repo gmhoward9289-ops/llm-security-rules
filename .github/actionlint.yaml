@@ -1,0 +1,5 @@
+# actionlint only knows GitHub's own runner labels; declare the self-hosted
+# runner's custom label so `runs-on: [self-hosted, swamplink]` lints clean.
+self-hosted-runner:
+  labels:
+    - swamplink
