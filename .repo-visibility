@@ -1,0 +1,5 @@
+# Visibility marker read by ~/.claude/hooks/repo-visibility-guard.py.
+# First non-comment line decides: `public` allows GitHub publish commands.
+# This repo is deliberately public -- a distributable semgrep ruleset whose
+# entire value is being consumable via --config URL, Action, and pre-commit.
+public
