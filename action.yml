@@ -31,13 +31,20 @@ runs:
       shell: bash
       env:
         SCAN_PATHS: ${{ inputs.paths }}
+        RULES_DIR: ${{ github.action_path }}/rules
       run: |
-        # SCAN_PATHS is intentionally unquoted: inputs.paths is documented as
+        # Nothing is interpolated into this script body. Every ${{ }} above is
+        # bound to an env var instead, because GitHub expands ${{ }} textually
+        # before bash ever sees the script -- a raw interpolation lets shell
+        # metacharacters in a value become shell syntax. An env var is passed
+        # as data; bash word-splits it but never re-parses it as code.
+        #
+        # github.action_path is GitHub-controlled rather than user-controlled,
+        # so interpolating it was not exploitable. It is bound here anyway: one
+        # exception to "no interpolation in a run block" is what a later edit
+        # copies when adding a value that IS attacker-controlled.
+        #
+        # SCAN_PATHS is deliberately unquoted -- inputs.paths is documented as
         # space-separated, so word-splitting into multiple path args is the
-        # point. Routing it through env: (rather than interpolating ${{ }}
-        # directly into the script) is what matters -- GitHub expands ${{ }}
-        # textually before bash ever sees the script, so a raw interpolation
-        # lets shell metacharacters in the input become shell syntax. A env
-        # var is passed as data; bash only word-splits it, it doesn't
-        # re-parse it as code.
-        semgrep scan --config "${{ github.action_path }}/rules" --error $SCAN_PATHS
+        # point. RULES_DIR is quoted; it is a single path.
+        semgrep scan --config "$RULES_DIR" --error $SCAN_PATHS

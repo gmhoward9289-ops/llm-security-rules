@@ -5,17 +5,48 @@ on:
     branches: [main]
   pull_request:
 
+# Least privilege. Nothing in this workflow writes to the repo.
+permissions:
+  contents: read
+
 jobs:
   semgrep-test:
-    runs-on: [self-hosted, swamplink]
+    # Choose the runner from the repo's own visibility, evaluated at run time.
+    #
+    # Private: minutes are metered and there are no forks, so every job runs
+    # first-party code. The swamplink self-hosted runner is free and safe here,
+    # which is the reason it exists.
+    #
+    # Public: minutes are free and unmetered, so the runner buys nothing -- and
+    # a fork PR supplies its own run-tests.sh, which this job executes. That is
+    # arbitrary attacker code on our own hardware.
+    #
+    # If `repository` is ever missing from the event payload, `private` is null,
+    # which is falsy. This fails closed to ubuntu-latest by design.
+    #
+    # IMPORTANT -- this expression is correctness, NOT a security boundary. For
+    # `pull_request` events GitHub reads the workflow file from the PR's merge
+    # ref, so a fork PR can simply rewrite this line back to self-hosted. What
+    # actually protects the runner while the repo is public is that the runner
+    # is not registered, plus fork-PR approval required for all outside
+    # collaborators. Re-register the runner only if this repo goes private.
+    runs-on: ${{ github.event.repository.private && fromJSON('["self-hosted", "swamplink"]') || 'ubuntu-latest' }}
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Don't leave the job token in .git/config in the self-hosted
+          # runner's workspace; nothing below talks to git.
+          persist-credentials: false
+
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+
       - name: Install semgrep
         run: pip install semgrep
+
       - name: Validate rules
         run: semgrep --validate --config rules/
+
       - name: Run rule tests
         run: ./run-tests.sh
