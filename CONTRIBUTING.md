@@ -117,9 +117,14 @@ Two things that decide whether a fixture is worth anything:
   reason and the suite goes green over a dead rule.
 
 If a fixture has to contain credential-shaped strings, use fake
-non-functional values and add the path **by name** to
-`.github/secret_scanning.yml` — that file uses explicit paths, not globs, so
-new fixtures don't silently inherit the exemption.
+non-functional values and add the path **by name** to *both*
+`.github/secret_scanning.yml` (GitHub's own scanning) and `.gitleaks.toml`
+(what contributors and downstream CI actually run). Both use explicit paths,
+not globs, so new fixtures don't silently inherit the exemption.
+
+Keeping gitleaks clean on this repo is not cosmetic. A ruleset that detects
+hardcoded credentials, and that trips a credential scanner on itself, loses
+the argument before anyone reads a rule.
 
 ## Before you open the PR
 
@@ -130,7 +135,7 @@ new fixtures don't silently inherit the exemption.
 - [ ] Metadata complete: `owasp-llm`, `cwe`, `confidence`, `references`
 - [ ] README coverage table updated
 - [ ] Any credential-shaped fixture string is fake and the file is listed in
-      `.github/secret_scanning.yml`
+      `.github/secret_scanning.yml` **and** `.gitleaks.toml`
 
 CI (`.github/workflows/test.yml`) runs validate plus the full suite on every
 pull request. It has to be green.

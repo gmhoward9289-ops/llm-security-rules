@@ -1,0 +1,25 @@
+# gitleaks configuration.
+#
+# This repo ships a ruleset that DETECTS hardcoded provider credentials, so its
+# test fixture must contain credential-shaped strings -- that is the thing under
+# test. Every value in that file is fake and non-functional. Without this
+# allowlist, gitleaks reports five findings on a security ruleset, which is
+# exactly the result that makes a reader distrust the tool.
+#
+# Scoped to one file by exact path, deliberately. This mirrors
+# .github/secret_scanning.yml, which uses explicit paths rather than globs so
+# that a new fixture cannot silently inherit an exemption nobody reviewed.
+#
+# Allowlisting by path rather than by finding fingerprint is also deliberate.
+# Fingerprints are pinned to a commit SHA, so every edit to the fixture would
+# strand the old entries and require new ones -- a baseline that rots into an
+# unreviewable list. The path is stable and says what it means.
+
+title = "llm-security-rules"
+
+[extend]
+useDefault = true
+
+[[allowlists]]
+description = "Fake provider keys in the secrets rule's own test fixture"
+paths = ['''^rules/secrets/provider-api-keys\.py$''']
