@@ -1,5 +1,7 @@
 # llm-security-rules
 
+[![Discussions](https://img.shields.io/github/discussions/gmhoward9289-ops/llm-security-rules)](https://github.com/gmhoward9289-ops/llm-security-rules/discussions)
+
 Tested [Semgrep](https://semgrep.dev) rules for LLM application security,
 mapped to the [OWASP Top 10 for LLM Applications (2025)](https://genai.owasp.org/).
 
@@ -28,6 +30,8 @@ or clone and point at `rules/`:
 ```bash
 semgrep scan --config path/to/llm-security-rules/rules .
 ```
+
+Questions and rule ideas: [Discussions](https://github.com/gmhoward9289-ops/llm-security-rules/discussions).
 
 ### GitHub Action
 
