@@ -105,6 +105,6 @@ out until they can be — fuzzy heuristics get rulesets uninstalled),
 AutoGen and Spring AI shapes, and a benchmarked precision corpus. The
 2–3 strongest rules are headed for the semgrep registry.
 
-MIT licensed. If you ship LLM code, point semgrep at it and tell me what
+Apache-2.0 licensed. If you ship LLM code, point semgrep at it and tell me what
 it gets wrong: real false-positive reports are the most valuable
 contribution a ruleset can receive.
