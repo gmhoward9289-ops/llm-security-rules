@@ -11,4 +11,6 @@ jobs:
       - uses: actions/checkout@v7
       - uses: codespell-project/actions-codespell@v2
         with:
+          path: rules,scripts,docs,.
+          skip: .git,*.pyc,__pycache__,tests
           ignore_words_list: retuned
